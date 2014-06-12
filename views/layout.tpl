@@ -10,6 +10,9 @@
     <title>{% block title %}Analysator{% endblock %}</title>
 
     <link href="/components/bootstrap/dist/css/bootstrap.css" type="text/css" rel="stylesheet">
+    <link href="/components/morrisjs/morris.css" type="text/css" rel="stylesheet">
+    <link href="/components/select2/select2.css" type="text/css" rel="stylesheet">
+    <link href="/components/select2/select2-bootstrap.css" type="text/css" rel="stylesheet">
     <link href="/css/style.css" type="text/css" rel="stylesheet">
 
     {% block head %}{% endblock %}
@@ -39,9 +42,15 @@
 
     {% block content %}{% endblock %}
 
+    {% block footer %}{% endblock %}
+
     <script type="text/javascript" src="/components/jquery/dist/jquery.js"></script>
     <script type="text/javascript" src="/components/underscore/underscore.js"></script>
+    <script type="text/javascript" src="/components/momentjs/moment.js"></script>
+    <script type="text/javascript" src="/components/select2/select2.js"></script>
     <script type="text/javascript" src="/components/bootstrap/dist/js/bootstrap.js"></script>
+    <script type="text/javascript" src="/components/raphael/raphael.js"></script>
+    <script type="text/javascript" src="/components/morrisjs/morris.js"></script>
 
     {% block scripts %}{% endblock %}
 

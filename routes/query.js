@@ -3,15 +3,7 @@
 "use strict";
 
 
-var pg = require('pg'),
-    config = require('../config');
-
-var connection = {
-    host: config.dbHost,
-    port: config.dbPort,
-    user: config.dbUser,
-    password: config.dbPassword
-};
+var pg = require('pg');
 
 /*
  * GET a query result.
@@ -22,26 +14,32 @@ var connection = {
 exports.run = function(req, res){
 
     // forgive me...
-    var query = req.body.query || "";
+    var connectionString = req.body.connectionString,
+        query = req.body.query || "";
 
-    if(query.toLowerCase().indexOf("select") !== 0 || query.indexOf(";") >= 0) {
-        res.send(403, "Nein");
+    query = query.trim();
+
+    if(query.toLowerCase().indexOf("select") !== 0 || (query.indexOf(";") > 0 && query.indexOf(";") !== query.length -1)) {
+        res.send(403, "Only single SELECT queries are permitted.");
     }
 
-    pg.connect(connection, function(err, client) {
+    pg.connect(connectionString, function(err, client, done) {
         if (err) {
-            pg.end();
-            throw new Error(err);
+            console.error(err);
+            res.send(500, "Could not connect to pool");
+            return;
         }
 
         client.query(query, function(err, result) {
+            done();
+
             if (err) {
-                pg.end();
-                throw new Error(err);
+                console.error(err);
+                res.send(500, err.toString());
+                return;
             }
 
-            res.send(200, result.rows);
-
+            res.send(200, result);
         });
     });
 
