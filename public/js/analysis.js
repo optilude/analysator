@@ -277,17 +277,14 @@
     AnalysisView.prototype.saveChartSettings = function() {
         var self = this;
 
-        // TODO:
-        //  - preUnits
-        //  - postUnits
-        //  - dateFormat?
-
         self.analysis.chartSettings = {
             type: self.$(".chartType").select2('val')? self.$(".chartType").select2('val') : null,
             xkey: self.$(".xkey").select2('val'),
             ykeys: self.$(".ykeys").select2('val'),
             goals: self.$(".goals").val()? self.$(".goals").val().split(',').map(function(e) { return e.trim(); }) : [],
             events: self.$(".events").val()? self.$(".events").val().split(',').map(function(e) { return e.trim(); }): [],
+            preUnits: self.$(".preUnits").val(),
+            postUnits: self.$(".postUnits").val(),
             smoothLines: self.$(".smoothLines:checked").length > 0,
             parseTime: self.$(".parseTime:checked").length > 0,
             stacked: self.$(".stacked:checked").length > 0
@@ -304,6 +301,8 @@
         self.$(".ykeys").select2('val', settings.ykeys);
         self.$(".goals").val(settings.goals? settings.goals.join(", ") : "");
         self.$(".events").val(settings.events? settings.events.join(", ") : "");
+        self.$(".preUnits").val(settings.preUnits);
+        self.$(".postUnits").val(settings.postUnits);
         self.$(".smoothLines").prop('checked', settings.smoothLines !== undefined? settings.smoothLines : true);
         self.$(".parseTime").prop('checked', settings.parseTime !== undefined? settings.parseTime : true);
         self.$(".stacked").prop('checked', settings.stacked !== undefined? settings.stacked : false);

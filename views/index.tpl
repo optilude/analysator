@@ -102,6 +102,14 @@
             <label for="events">Event lines vertical &mdash; line and area chart only</label>
             <input type="text" class="form-control events" placeholder="2014-01-01, 2014-02-01" />
           </div>
+          <div class="form-group">
+            <label for="preUnits">Units (pre)</label>
+            <input type="text" class="form-control preUnits" placeholder="£" />
+          </div>
+          <div class="form-group">
+            <label for="postUnits">Units (post)</label>
+            <input type="text" class="form-control postUnits" placeholder="hrs" />
+          </div>
           <div class="checkbox">
             <label>
               <input class="smoothLines" type="checkbox" checked /> Smooth lines (line and area chart only)
@@ -120,7 +128,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-dismiss="modal">Save</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
