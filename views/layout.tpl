@@ -24,7 +24,7 @@
     <![endif]-->
   </head>
 
-  <body {% block bodyclass %}{% endblock %}>
+  <body class="{% block bodyclass %}{% endblock %}">
 
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="container-fluid">
