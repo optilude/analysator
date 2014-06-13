@@ -44,6 +44,12 @@
         </div>
       </form>
 
+      <div class="chart-container">
+        <h2 class="sub-header">Chart</h2>
+        <div class="chart-area" style="height: 300px;"></div>
+      </div>
+
+
       <h2 class="sub-header">Results</h2>
       <div class="table-responsive">
         <table class="table table-striped results">

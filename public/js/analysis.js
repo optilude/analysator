@@ -1,9 +1,9 @@
 /*jshint globalstrict:true, devel:true */
-/*global jQuery, moment, localStorage, _, bootbox, window */
+/*global jQuery, moment, localStorage, _, bootbox, Morris, window */
 
 "use strict";
 
-(function($, _, moment, bootbox, localStorage) {
+(function($, _, moment, bootbox, Morris, localStorage) {
 
     /** Storage **/
     var Storage = function(name, manager, data) {
@@ -189,6 +189,9 @@
         if(self.analysis.chartSettings) {
             self.renderChartSettings();
         }
+
+        self.renderTable();
+        self.renderChart();
     };
 
     AnalysisView.prototype.runQuery = function() {
@@ -220,11 +223,11 @@
         var self = this,
             data = self.analysis.currentData;
 
+        self.clearTable();
+
         if(!data) {
             return;
         }
-
-        self.clearTable();
 
         data.fields.forEach(function(field) {
             self.$(".results thead tr").append("<th>" + field.name + "</th>");
@@ -251,11 +254,33 @@
             data = self.analysis.currentData,
             settings = self.analysis.chartSettings;
 
-        // TODO: Render chart
+        if(!settings || !settings.type || !data || !data.rows) {
+            self.$(".chart-container").hide();
+            return;
+        }
+
+        self.$(".chart-container").show();
+        self.$(".chart-area").empty();
+
+        var Chart = Morris[settings.type];
+        new Chart(_.extend({}, settings, {
+            element: self.$('.chart-area'),
+            data: data.rows,
+            labels: settings.ykeys,
+            hideHover: 'auto',
+            dateFormat: settings.parseTime? function(d) { return moment(d).format("DD/MM/YYYY"); } : null,
+            xLabelAngle: 45
+        }));
+
     };
 
     AnalysisView.prototype.saveChartSettings = function() {
         var self = this;
+
+        // TODO:
+        //  - preUnits
+        //  - postUnits
+        //  - dateFormat?
 
         self.analysis.chartSettings = {
             type: self.$(".chartType").select2('val')? self.$(".chartType").select2('val') : null,
@@ -272,11 +297,7 @@
     AnalysisView.prototype.renderChartSettings = function() {
         var self = this,
             data = self.analysis.currentData,
-            settings = self.analysis.chartSettings;
-
-        if(!settings) {
-            return;
-        }
+            settings = self.analysis.chartSettings || {};
 
         self.$(".chartType").select2('val', settings.type);
         self.$(".xkey").select2('val', settings.xkey);
@@ -347,4 +368,4 @@
     window.Analysator.Analysis = Analysis;
     window.Analysator.AnalysisView = AnalysisView;
 
-})(jQuery, _, moment, bootbox, localStorage);
+})(jQuery, _, moment, bootbox, Morris, localStorage);
