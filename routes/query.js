@@ -19,6 +19,7 @@ exports.run = function(req, res){
 
     query = query.trim();
 
+    // securityz lol
     if(query.toLowerCase().indexOf("select") !== 0 || (query.indexOf(";") > 0 && query.indexOf(";") !== query.length -1)) {
         res.send(403, "Only single SELECT queries are permitted.");
     }

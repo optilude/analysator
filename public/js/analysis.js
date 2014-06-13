@@ -1,12 +1,11 @@
 /*jshint globalstrict:true, devel:true */
-/*global jQuery, moment, localStorage, _, window */
+/*global jQuery, moment, localStorage, _, bootbox, window */
 
 "use strict";
 
-(function($, _, moment, localStorage) {
+(function($, _, moment, bootbox, localStorage) {
 
     /** Storage **/
-
     var Storage = function(name, manager, data) {
         if(data) {
             _.extend(this, data);
@@ -20,6 +19,7 @@
         this._manager.saveStorage(this._name, _.omit(this, ['_name', '_manager', 'save']));
     };
 
+    /** Storage manager **/
     var StorageManager = function() {
         this.storage = localStorage;
     };
@@ -37,9 +37,13 @@
         delete this.storage[name];
     };
 
-    /** Analysis model **/
+    StorageManager.prototype.listStorages = function() {
+        return _.keys(this.storage).sort();
+    };
 
-    var Analysis = function(storage) {
+    /** Analysis model **/
+    var Analysis = function(name, storage) {
+        this.name = name;
         this.storage = storage;
 
         this.connectionString = null;
@@ -63,6 +67,17 @@
         this.storage.save();
     };
 
+    Analysis.prototype.clone = function(newName, newStorage) {
+        var analysis = new Analysis(newName, newStorage);
+
+        analysis.connectionString = this.connectionString;
+        analysis.query = this.query;
+        analysis.chartSettings = this.chartSettings;
+        analysis.currentData = this.currentData;
+
+        return analysis;
+    };
+
     Analysis.prototype.runQuery = function() {
         var self = this,
             deferred = $.Deferred();
@@ -82,11 +97,17 @@
         return deferred;
     };
 
-    /** View **/
-    var AnalysisView = function(context, analysis) {
+    /** Analysis view **/
+    var AnalysisView = function(context, storageManager, initialAnalysis) {
         this.$el = $(context);
 
-        this.analysis = analysis;
+        this.storageManager = storageManager;
+        this.loadAnalysis(initialAnalysis);
+    };
+
+    AnalysisView.prototype.loadAnalysis = function(name) {
+        this.analysis = new Analysis(name, this.storageManager.getStorage(name));
+        this.analysis.load();
     };
 
     AnalysisView.prototype.$ = function(selector) {
@@ -95,6 +116,14 @@
 
     AnalysisView.prototype.bindEvents = function()  {
         var self = this;
+
+        self.$(".sidebar").on('click', 'a', function(e) {
+            e.preventDefault();
+            var name = $(this).attr('data-analysis');
+
+            self.loadAnalysis(name);
+            self.initialize();
+        });
 
         self.$(".connectionString").change(function() {
             self.analysis.connectionString = $(this).val();
@@ -120,21 +149,23 @@
 
         self.$(".chartModal").on('hidden.bs.modal', function(event) {
             self.saveChartSettings();
-            self.analysis.save();
-
             self.renderChart();
         });
-    };
 
-    AnalysisView.prototype.initialize = function() {
-        var self = this;
+        self.$(".save").click(function(e) {
+            e.preventDefault();
+            self.analysis.save();
+        });
 
-        self.$(".connectionString").val(self.analysis.connectionString);
-        self.$(".query").val(self.analysis.query);
+        self.$(".save-as").click(function(e) {
+            e.preventDefault();
+            self.saveAs();
+        });
 
-        if(self.analysis.chartSettings) {
-            self.renderChartSettings();
-        }
+        self.$(".delete").click(function(e) {
+            e.preventDefault();
+            self.deleteAnalysis();
+        });
 
         function currentDataKeys() {
             return self.analysis.currentData?
@@ -147,22 +178,42 @@
         self.$(".ykeys").select2({data: currentDataKeys, multiple: true});
     };
 
+    AnalysisView.prototype.initialize = function() {
+        var self = this;
+
+        self.renderNavigation();
+
+        self.$(".connectionString").val(self.analysis.connectionString);
+        self.$(".query").val(self.analysis.query);
+
+        if(self.analysis.chartSettings) {
+            self.renderChartSettings();
+        }
+    };
+
     AnalysisView.prototype.runQuery = function() {
         var self = this;
 
         self.analysis.runQuery()
         .done(function(data) {
             self.$(".configure-chart").prop('disabled', false);
+            self.$(".save-as").prop('disabled', false);
 
-            self.analysis.save();
             self.renderTable();
             self.renderChart();
         })
         .fail(function(error) {
             alert(error);
             self.$(".configure-chart").prop('disabled', true);
+            self.$(".save-as").prop('disabled', true);
         });
+    };
 
+    AnalysisView.prototype.clearTable = function(first_argument) {
+        var self = this;
+
+        self.$(".results thead tr").empty();
+        self.$(".results tbody").empty();
     };
 
     AnalysisView.prototype.renderTable = function() {
@@ -173,8 +224,7 @@
             return;
         }
 
-        self.$(".results thead tr").empty();
-        self.$(".results tbody").empty();
+        self.clearTable();
 
         data.fields.forEach(function(field) {
             self.$(".results thead tr").append("<th>" + field.name + "</th>");
@@ -238,6 +288,55 @@
         self.$(".stacked").prop('checked', settings.stacked !== undefined? settings.stacked : false);
     };
 
+    AnalysisView.prototype.renderNavigation = function() {
+        var self = this,
+            $sidebar = self.$(".nav-sidebar.saved-analyses");
+
+        $sidebar.empty();
+
+        self.storageManager.listStorages().forEach(function(name) {
+            if(name === 'default') {
+                return;
+            }
+
+            $sidebar.append("<li><a data-analysis='" + name + "' href='#'>" + name + "</a></li>");
+        });
+
+        self.$(".sidebar .active").removeClass('active');
+        self.$(".sidebar a[data-analysis='" + self.analysis.name + "']").parent().addClass('active');
+    };
+
+    AnalysisView.prototype.saveAs = function() {
+        var self = this;
+
+        bootbox.prompt("Please choose a name", function(newName) {
+            if(!newName) {
+                return;
+            }
+
+            self.analysis = self.analysis.clone(newName, self.storageManager.getStorage(newName));
+            self.analysis.save();
+
+            self.renderNavigation();
+        });
+    };
+
+    AnalysisView.prototype.deleteAnalysis = function() {
+        var self = this,
+            name = self.analysis.name;
+
+        bootbox.confirm("Are you sure you want to delete the analysis '" + name + "'?", function(result) {
+            if(result) {
+                self.storageManager.deleteStorage(name);
+
+                self.analysis = new Analysis('default', self.storageManager.getStorage('default'));
+                self.analysis.load();
+
+                self.initialize();
+            }
+        });
+    };
+
     /** Export **/
 
     if(!window.Analysator) {
@@ -248,4 +347,4 @@
     window.Analysator.Analysis = Analysis;
     window.Analysator.AnalysisView = AnalysisView;
 
-})(jQuery, _, moment, localStorage);
+})(jQuery, _, moment, bootbox, localStorage);

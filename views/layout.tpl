@@ -49,6 +49,7 @@
     <script type="text/javascript" src="/components/momentjs/moment.js"></script>
     <script type="text/javascript" src="/components/select2/select2.js"></script>
     <script type="text/javascript" src="/components/bootstrap/dist/js/bootstrap.js"></script>
+    <script type="text/javascript" src="/components/bootbox/bootbox.js"></script>
     <script type="text/javascript" src="/components/raphael/raphael.js"></script>
     <script type="text/javascript" src="/components/morrisjs/morris.js"></script>
 

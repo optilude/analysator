@@ -11,6 +11,7 @@
     "morrisjs": "~0.5.0",
     "underscore": "~1.6.0",
     "momentjs": "~2.7.0",
-    "select2": "~3.4.8"
+    "select2": "~3.4.8",
+    "bootbox": "~4.2.0"
   }
 }

@@ -4,13 +4,19 @@
 
 {% block content %}
 <div class="container-fluid">
+
   <div class="row">
     <div class="col-sm-2 col-md-2 sidebar">
-      <ul class="nav nav-sidebar">
-        <li class="active"><a href="/">Query</a></li>
+      <ul class="nav nav-sidebar default">
+        <li class="active"><a data-analysis="default" href="#">New query</a></li>
+      </ul>
+      <ul class="nav nav-sidebar saved-analyses">
+
+      </ul>
     </div>
+
     <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-      <h1 class="page-header">Ad-hoc query</h1>
+      <h1 class="page-header">Analysis</h1>
 
       <form class="form-horizontal parameters-form" role="form">
         <div class="form-group">
@@ -28,7 +34,12 @@
         <div class="form-group">
           <div class="col-md-11 col-md-offset-1">
             <button type="submit" class="btn btn-success run">Run</button>
-            <button type="button" class="btn btn-primary configure-chart" disabled>Chart</button>
+            <button type="button" class="btn btn-primary configure-chart" disabled>Configure chart&hellip;</button>
+            <div class="pull-right">
+              <button type="button" class="btn btn-warning save">Save</button>
+              <button type="button" class="btn btn-warning save-as">Save as&hellip;</button>
+              <button type="button" class="btn btn-danger delete">Delete&hellip;</button>
+            </div>
           </div>
         </div>
       </form>
@@ -115,11 +126,8 @@
 <script type="text/javascript">
 
   var storageManager = new Analysator.StorageManager(),
-      storage = storageManager.getStorage('default'),
-      analysis = new Analysator.Analysis(storage),
-      view = new Analysator.AnalysisView(".analysator-main", analysis);
+      view = new Analysator.AnalysisView(".analysator-main", storageManager, 'default');
 
-  analysis.load();
   view.bindEvents();
   view.initialize();
 
