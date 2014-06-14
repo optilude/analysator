@@ -4,6 +4,10 @@ The Analysator is a simple tool for querying databases and charting the results.
 
 It is also a massive security hole. Seriously. Handle with care.
 
+(Why? Because it passes database queries more or less straight through from a
+browser to any Postgres database reachable from the server, with only very
+cursory validation against destructive queries.)
+
 ## Installation
 
 Install using `npm` and `bower`:
